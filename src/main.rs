@@ -8,7 +8,7 @@ extern crate hyper_native_tls;
 extern crate colored;
 extern crate serde; 
 extern crate serde_json; 
-extern crate webbrowser;
+
 use serde_json::{Value};
 use clap::{App,SubCommand};
 use colored::*;
@@ -17,49 +17,34 @@ use colored::*;
 
 fn main() {
 
-let matches = App::new("hn")
+let matches = App::new("HackerNew CLI")
         .version("0.1.0")
         .author("VP7 <shihan.viswa@gmail.com>")
-        .about("Command Line CLI for HN")
+        .about("Bring top posts from HN")
         .subcommand(SubCommand::with_name("ask").about("Display Ask HN posts."))
         .subcommand(SubCommand::with_name("new").about("Display the latest posts."))
         .subcommand(SubCommand::with_name("show").about("Display Show HN posts."))
         .subcommand(SubCommand::with_name("top").about("Display the top recent posts."))
                           .get_matches();
 
- pretty_env_logger::init();
-
-let ask_stories="https://hacker-news.firebaseio.com/v0/askstories.json?print=pretty";
-let show_stories="https://hacker-news.firebaseio.com/v0/showstories.json?print=pretty";
-let new_stories="https://hacker-news.firebaseio.com/v0/newstories.json?print=pretty";
-let top_stories="https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty";
-
 
 
 match matches.subcommand_name() {
         Some("ask") => {
             println!("{}","We are going to Display Ask HN posts".blue());
-            make_get_connection(ask_stories);
+            make_get_connection("https://hacker-news.firebaseio.com/v0/askstories.json?print=pretty");
         },
         Some("new") => {
             println!("{}","We are going to Display the latest posts".blue());
-            make_get_connection(new_stories);
+            make_get_connection("https://hacker-news.firebaseio.com/v0/newstories.json?print=pretty");
             },
         Some("show") => {
             println!("{}","We are going to Display Show HN posts ".blue());
-            make_get_connection(show_stories);
+            make_get_connection("https://hacker-news.firebaseio.com/v0/showstories.json?print=pretty");
             },
         Some("top") => {
             println!("{}","We are going to Display the top recent posts ".blue());
-            make_get_connection(top_stories);
-        },
-         Some("open") => {
-            println!("{}","We are going to Display the top recent posts ".blue());
-            if matches.is_present("debug") {
-            println!("Printing debug info...");
-        } else {
-            println!("Printing normally...");
-        }
+            make_get_connection("https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty");
         },
         None        => println!("No subcommand was used"),
         _           => unreachable!(), // Assuming you've listed all direct children above, this is unreachable
@@ -67,17 +52,15 @@ match matches.subcommand_name() {
 
 
 }
-
+    
 fn make_get_connection(uri: &str ){
 let mut resp = reqwest::get(uri).unwrap(); 
    assert!(resp.status().is_success());
 
-   let body = resp.text().unwrap();
-    
-           
-           let s_slice: &str = &*body;  // s  : String 
+   let response_body = resp.text().unwrap();
+           let s_slice: &str = &*response_body;  // s  : String 
            let all_array: Value = serde_json::from_str(s_slice).unwrap();
-            
+
             for index in 0..10{
                     let id =(all_array[index]).to_string();
                     fetch_specific_data(id,index);
@@ -95,12 +78,12 @@ fn fetch_specific_data(story_id:  String , current_index: usize){
     let mut resp = reqwest::get(&owned_string).unwrap(); 
    assert!(resp.status().is_success());
 
-   let body = resp.text().unwrap();
+   let response_body = resp.text().unwrap();
     
 
     
-     let s_slice: &str = &*body;  // s  : String 
-           let json_value: Value = serde_json::from_str(s_slice).unwrap();
+     let s_slice: &str = &*response_body;  // s  : String 
+     let json_value: Value = serde_json::from_str(s_slice).unwrap();
 
      
 /*
